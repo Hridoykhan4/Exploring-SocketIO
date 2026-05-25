@@ -14,4 +14,11 @@ export const validateOrder = (data) => {
   return {valid: true}
 };
 
-// Order id generator
+// Order id generator Format -- ORD-dateStamp-randomNum-001(Ajker koto number order 002)
+export const generateOrderId = () => {
+    const now = new Date()
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDay() + 1).padStart(2, "0");
+    
+}
