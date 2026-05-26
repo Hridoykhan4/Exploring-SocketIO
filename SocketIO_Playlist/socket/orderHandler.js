@@ -2,7 +2,7 @@ import { validateOrder } from "../utils/helper.js";
 
 
 export const orderHandler = (io, socket) => {
-    console.log('Socket Is Connected', socket, io, socket.id);
+    console.log('Socket Is Connected', socket.id);
     // place order
     // event k on korlam, coz emit diye kew ekjon trigger korbe 
     // emit --> trigger --> ON --> Listen
@@ -11,6 +11,7 @@ export const orderHandler = (io, socket) => {
         try {
             console.log(`Place Order from ${socket.id}`);
             const validation = validateOrder(data)   
+
             if(!validation.valid){
                 return callback({success: false, message: validation?.message})
             }
@@ -22,3 +23,4 @@ export const orderHandler = (io, socket) => {
     })
 };
 
+    
