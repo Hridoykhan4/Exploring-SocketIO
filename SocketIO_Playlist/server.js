@@ -25,8 +25,11 @@ const io = new Server(server, {
   cors: { origin: "*", methods: ["GET", "POST"] },
 });
 
+
+// Socket er connection ON korlam
 io.on("connection", (socket) => {
   console.log("User connected", socket.id);
+  // Socket trigger hoise
   socket.emit("Connected", {
     message: `User ${socket.id} is successfully ☑️ Connected`,
   });
