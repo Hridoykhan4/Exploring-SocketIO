@@ -226,12 +226,134 @@ export const orderHandler = (io, socket) => {
         },
         { returnDocument: "after" },
       );
+
+      // Update j hoilo eiTa order-id te paThano lagbe, database theke ami data pull kore nibo na, but ami data oi porjontw poicchaite hbe
+      io.to(`order-${data.orderId}`).emit("statusUpdated", {
+        orderId: data.orderId,
+        status: data?.newStatus,
+        order: result,
+      });
+
+      // Order Status j change hoise admin k eo tw jante hbe
+      // Jehutu admin flow tai socket.io
+      /* Io hocche oi server Ta jeTa diye frontend r backend er communication maintain thaktase
+      socket.to, jeta internally ase, internally she nijeke janaite partase , eTa server e j admin ase oee jantase, frontend theke kew listen kore nai, frontend er shathe kono connectoner dorkar nai, server e hcche
+      
+      */
+      //  Admin eshe ekhn emit korbe, emit kore admin k janate hbe order status j change hoise
+      // eta j ami emit korlam kothaw ekTa ami listen korbo eTak
+      socket.to("admins").emit("orderStatusChanged", {
+        orderId: data.orderId,
+        newStatus: data.newStatus,
+      });
+      callback({ success: true, order: result });
     } catch (err) {
       console.error("❌ Update status error:", error);
       callback({ success: false, message: "Failed to update status" });
     }
   });
+
+  // Accept Order, estimated time deya, disconnect kora
+  socket.on("acceptOrder", async (data, callback) => {
+    try {
+      if (!socket.isAdmin) {
+        return callback({ success: false, message: "Unauthorized" });
+      }
+      const ordersCollection = getCollection("orders");
+      const order = await ordersCollection.findOne({
+        orderId: data.orderId,
+      });
+
+      if (!order || order.status !== "pending") {
+        return callback({
+          success: false,
+          message: "Cannot accept this order",
+        });
+      }
+
+      const estimatedTime = data.estimatedTime || 30;
+      const result = await ordersCollection.findOneAndUpdate(
+        { orderId: data.orderId },
+        {
+          $set: {
+            status: "confirmed",
+            estimatedTime,
+            updatedAt: new Date(),
+          },
+          $push: {
+            statusHistory: {
+              status: "confirmed",
+              timeStamp: new Date(),
+              by: socket.id,
+              note: `Accepted with ${estimatedTime} min estimated time`,
+            },
+          },
+        },
+        {returnDocument: 'after'}
+      );
+
+      // Order number j room Ta te ase oikhane pathate hbe, room e socket kaj kore dilo
+      io.to(`order-${data.orderId}`).emit('orderAccepted', {orderId: data.orderId, estimatedTime})
+      // Admin hishebe jei join kore sheo jeno real time update dekhte pay
+      socket.on('admins').emit('orderAcceptedByAdmin', {orderId: data.orderId})
+      callback({success: true, order: result})
+
+    } catch (error) {
+      console.error("❌ Accept order error:", error);
+      callback({ success: false, message: "Failed to accept order" });
+    }
+  });
+
+  // Reject Order
+  socket.on("rejectOrder", async (data, callback) => {
+    try {
+      if (!socket.isAdmin) {
+        return callback({ success: false, message: "Unauthorized" });
+      }
+      const ordersCollection = getCollection("orders");
+      const order = await ordersCollection.findOne({
+        orderId: data.orderId,
+      });
+
+      if (!order || order.status !== "pending") {
+        return callback({
+          success: false,
+          message: "Cannot reject this order",
+        });
+      }
+
+      await ordersCollection.updateOne(
+        { orderId: data.orderId },
+        {
+          $set: {
+            status: "cancelled",
+            updatedAt: new Date(),
+          },
+          $push: {
+            statusHistory: {
+              status: "cancelled",
+              timeStamp: new Date(),
+              by: socket.id,
+              note: `Rejected ${data.reason}`,
+            },
+          },
+        },
+      );
+
+      io.to(`order-${data.orderId}`).emit('orderRejected', {orderId: data.orderId, reason: data.reason})
+      callback({success: true})
+      
+
+    } catch (error) {
+      console.error("❌ Reject order error:", error);
+      callback({ success: false, message: "Failed to reject order" });
+    }
+  });
+
+
+
 };
 
 // Jotogula on likhsi er corresponding ekTa kore emit thakbe, ekTa event on hocche mane she event ta emit hocche kothaw, event kew pathabe r kew listen korbe, ei kaj Ta cholte thakbe
 // ----- event jodi specific jaygay koraite chaii tahole room er concept Ta lagbe
+//
