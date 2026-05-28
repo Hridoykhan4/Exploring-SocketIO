@@ -3,6 +3,7 @@ import {
   calculateTotal,
   createOrderDocument,
   generateOrderId,
+  isValidStatusTransition,
   validateOrder,
 } from "../utils/helper.js";
 
@@ -98,14 +99,12 @@ export const orderHandler = (io, socket) => {
             updatedAt: new Date(),
           },
           $push: {
-            statusHistory: [
-              {
-                status: "cancelled",
-                timeStamp: new Date(),
-                by: socket.id,
-                note: data.reason || "Cancelled by customer",
-              },
-            ],
+            statusHistory: {
+              status: "cancelled",
+              timeStamp: new Date(),
+              by: socket.id,
+              note: data.reason || "Cancelled by customer",
+            },
           },
         },
       );
@@ -144,18 +143,95 @@ export const orderHandler = (io, socket) => {
       callback({ success: true, orders });
     } catch (err) {
       console.error("[ Get Orders Failed ] ", err);
-      callback({ success: false, message: err?.message || "Failed to load Orders"});
+      callback({
+        success: false,
+        message: err?.message || "Failed to load Orders",
+      });
     }
   });
 
   // ======================
   // ADMIN EVENTS
   // ======================
+  // Admin customer er status update kore dibe, login korbe, customer admin er event gula real time e dekhbe
 
-  
+  socket.on("adminLogin", (data, callback) => {
+    try {
+      if (data?.password === process.env.ADMIN_PASSWORD) {
+        socket.isAdmin = true;
+        // Admin er room e join kortasi, jodi kono room er moddhe theke info chai taile oi room er bhitor join koraite hobe
+        socket.join("admins");
+        console.log(`Admin Logged in: ${socket.id}`);
+        callback({ success: true });
+      } else {
+        callback({ success: false, message: "Invalid Password" });
+      }
+    } catch (err) {
+      callback({ success: false, message: "Login Failed" });
+    }
+  });
 
+  // Admin order status update korbe, but tar aage admin k shob order paite hobe
+  socket.on("getAllOrders", async (data, callback) => {
+    try {
+      if (!socket.isAdmin)
+        return callback({ success: false, message: "Unauthorized" });
+      const ordersCollection = getCollection("orders");
+      const filter = data?.status ? { status: data?.status } : {};
+      const orders = await ordersCollection
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .limit(data?.limit || 50)
+        .toArray();
+      callback({ success: true, orders });
+    } catch (err) {
+      console.error("❌ Get all orders error:", err);
+      callback({ success: false, message: "Failed to load orders" });
+    }
+  });
+
+  // Update Order Status
+  // Emit hobe client theke
+  // On diye listen kore asi
+  socket.on("updateOrderStatus", async (data, callback) => {
+    try {
+      if (!socket.isAdmin) {
+        return callback({ success: false, message: "Unauthorized" });
+      }
+      const ordersCollection = getCollection("orders");
+      const order = await ordersCollection.findOne({ orderId: data.orderId });
+
+      if (!order)
+        return callback({ success: false, message: `Order Not Found` });
+
+      if (!isValidStatusTransition(order.status, data?.newStatus)) {
+        return callback({
+          success: false,
+          message: "Invalid status transition",
+        });
+      }
+
+      const result = await ordersCollection.findOneAndUpdate(
+        { orderId: data.orderId },
+        {
+          $set: { status: data.newStatus, updatedAt: new Date() },
+          $push: {
+            statusHistory: {
+              status: data?.newStatus,
+              timeStamp: new Date(),
+              by: socket.id,
+              note: "Status updated by Admin",
+            },
+          },
+        },
+        { returnDocument: "after" },
+      );
+    } catch (err) {
+      console.error("❌ Update status error:", error);
+      callback({ success: false, message: "Failed to update status" });
+    }
+  });
 };
-
 
 // Jotogula on likhsi er corresponding ekTa kore emit thakbe, ekTa event on hocche mane she event ta emit hocche kothaw, event kew pathabe r kew listen korbe, ei kaj Ta cholte thakbe
 // ----- event jodi specific jaygay koraite chaii tahole room er concept Ta lagbe

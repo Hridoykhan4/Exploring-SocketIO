@@ -5,8 +5,11 @@ export const validateOrder = (data) => {
     return { valid: false, message: "Customer phone number is required" };
   if (!data?.address?.trim())
     return { valid: false, message: "Customer address is required" };
-  if (!Array.isArray(data?.items))
+  if (!Array.isArray(data?.items) || data?.items?.length === 0)
     return { valid: false, message: "Order at least one item !!" };
+  
+    
+
   return { valid: true };
 };
 
@@ -22,9 +25,11 @@ export const generateOrderId = () => {
   return `ORD-${year}${month}${day}-${random}`;
 };
 
+
+
 export const calculateTotal = (items) => {
   const subTotal = items.reduce(
-    (total, item) => total + (item.price * item.quantity),
+    (total, item) => total + item.price * item.quantity,
     0,
   );
   const vat = subTotal * 0.1;
@@ -38,45 +43,45 @@ export const calculateTotal = (items) => {
   };
 };
 
+export const createOrderDocument = (orderData, orderId, total) => {
+  return {
+    orderId,
+    customerName: orderData?.customerName?.trim(),
+    customerPhone: orderData?.customerPhone?.trim(),
+    address: orderData?.address?.trim(),
+    items: orderData?.items,
+    subTotal: total?.subTotal,
+    tax: total?.total,
+    deliveryCost: total?.deliveryCost,
+    total: total?.totalAmount,
+    notes: orderData?.notes,
+    paymentMethod: orderData?.paymentMethod,
+    paymentStatus: "pending",
+    status: "pending",
+    statusHistory: [
+      {
+        status: "pending",
+        timeStamp: new Date(),
+        by: "customer",
+        note: "Order Placed",
+      },
+    ],
+    estimatedTime: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+};
 
-  export const createOrderDocument = (orderData, orderId, total) => {
-    return {
-      orderId,
-      customerName: orderData?.customerName?.trim(),
-      customerPhone: orderData?.customerPhone?.trim(),
-      address: orderData?.address?.trim(),
-      items: orderData?.items,
-      subTotal: total?.subTotal,
-      tax: total?.total,
-      deliveryCost: total?.deliveryCost,
-      total: total?.totalAmount,
-      notes: orderData?.notes,
-      paymentMethod: orderData?.paymentMethod,
-      paymentStatus: 'pending',
-      status: 'pending',
-     statusHistory: [{
-      status: 'pending',
-      timeStamp: new Date(),
-      by: "customer",
-      note: "Order Placed"
-     }],
-     estimatedTime: null,
-     createdAt: new Date(),
-     updatedAt: new Date()
-    };
-  }
-
-
-  // Ei function Ta amder status er j transition hocche sheTa valid kina 
-  export const isValidStatusTransition = (currentStatus, newStatus) => {
-    const validTransitions = {
-      pending: ['confirmed', 'cancelled'],
-      confirmed: ['preparing','cancelled'],
-      preparing: ['ready', 'cancelled'],
-      ready: ['out_for_delivery', 'cancelled'],
-      out_for_delivery: ['delivered'],
-      delivered: [],
-      cancelled: []
-    }
-    return validTransitions[currentStatus]?.includes(newStatus) || false
-  }
+// Ei function Ta amder status er j transition hocche sheTa valid kina
+export const isValidStatusTransition = (currentStatus, newStatus) => {
+  const validTransitions = {
+    pending: ["confirmed", "cancelled"],
+    confirmed: ["preparing", "cancelled"],
+    preparing: ["ready", "cancelled"],
+    ready: ["out_for_delivery", "cancelled"],
+    out_for_delivery: ["delivered"],
+    delivered: [],
+    cancelled: [],
+  };
+  return validTransitions[currentStatus]?.includes(newStatus) || false;
+};
