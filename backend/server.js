@@ -10,7 +10,6 @@ import http from "http";
 import { connectDB, getCollection, closeDB } from "./config/database.js";
 import { orderHandler } from "./socket/orderHandler.js";
 
-
 // Load environment variables
 dotenv.config();
 
@@ -25,12 +24,11 @@ const io = new Server(server, {
   cors: { origin: "*", methods: ["GET", "POST"] },
 });
 
-
 // Socket er connection ON korlam
 io.on("connection", (socket) => {
-  console.log("User connected", socket.id);
+  // console.log("User connected", socket.id);
   // Socket trigger hoise
-  socket.emit("Connected", {
+  socket.emit("connected", {
     message: `User ${socket.id} is successfully ☑️ Connected`,
   });
   // For handling the Orders
@@ -153,10 +151,10 @@ connectDB()
 ║  📊 MongoDB: Connected                 ║
 ╚════════════════════════════════════════╝
     `);
-      console.log("📝 API Endpoints:");
-      console.log(`   GET  /health`);
-      console.log(`   GET  /api/orders`);
-      console.log(`   GET  /api/orders/:orderId`);
+      // console.log("📝 API Endpoints:");
+      // console.log(`   GET  /health`);
+      // console.log(`   GET  /api/orders`);
+      // console.log(`   GET  /api/orders/:orderId`);
       console.log("\n✨ Ready! time to explore Socket.IO \n");
     });
   })

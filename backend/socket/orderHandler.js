@@ -8,7 +8,7 @@ import {
 } from "../utils/helper.js";
 
 export const orderHandler = (io, socket) => {
-  console.log("Socket Is Connected", socket.id);
+  // console.log("Socket Is Connected", socket.id);
   // place order
   // event k on korlam, coz emit diye kew ekjon trigger korbe
   // emit --> trigger --> ON --> Listen
@@ -22,18 +22,18 @@ export const orderHandler = (io, socket) => {
   // ======================
   socket.on("placeOrder", async (data, callback) => {
     try {
-      console.log(`Place Order from ${socket.id}`);
+      // console.log(`Place Order from ${socket.id}`);
       const validation = validateOrder(data);
 
       if (!validation.valid) {
         return callback({ success: false, message: validation?.message });
       }
+
       const total = calculateTotal(data?.items);
       const orderId = generateOrderId();
       const order = createOrderDocument(data, orderId, total);
       const ordersCollection = getCollection("orders");
       await ordersCollection.insertOne(order);
-
       // Room e jeno join korte pare, tahole baki event gula shee listen korte parbe
       socket.join(`order-${orderId}`);
       socket.join("customers");
@@ -65,7 +65,7 @@ export const orderHandler = (io, socket) => {
       if (!order)
         return callback({ success: false, message: "Order Not Found" });
       // Order thakle join korbo, keno karon amader order er ekTa event ase tw, ei order er event Ta te amra join korbo
-      // socket.join(`order-${orderId}`) ei room Tar moddhei tw amar event er jk update gula shegula ashbe
+      // socket.join(`order-${orderId}`) ei room Tar moddhei tw amar event er j update gula shegula ashbe
 
       socket.join(`order-${data?.orderId}`);
       callback({ success: true, order });
@@ -141,6 +141,7 @@ export const orderHandler = (io, socket) => {
         .limit(50)
         .toArray();
       callback({ success: true, orders });
+      console.log(orders);
     } catch (err) {
       console.error("[ Get Orders Failed ] ", err);
       callback({
@@ -248,7 +249,7 @@ export const orderHandler = (io, socket) => {
       });
       callback({ success: true, order: result });
     } catch (err) {
-      console.error("❌ Update status error:", error);
+      console.error("❌ Update status error:", err);
       callback({ success: false, message: "Failed to update status" });
     }
   });
@@ -289,15 +290,20 @@ export const orderHandler = (io, socket) => {
             },
           },
         },
-        {returnDocument: 'after'}
+        { returnDocument: "after" },
       );
 
       // Order number j room Ta te ase oikhane pathate hbe, room e socket kaj kore dilo
-      io.to(`order-${data.orderId}`).emit('orderAccepted', {orderId: data.orderId, estimatedTime})
+      io.to(`order-${data.orderId}`).emit("orderAccepted", {
+        orderId: data.orderId,
+        estimatedTime,
+      });
       // Admin hishebe jei join kore sheo jeno real time update dekhte pay
-      socket.on('admins').emit('orderAcceptedByAdmin', {orderId: data.orderId})
-      callback({success: true, order: result})
-
+      io.to("admins").emit("orderStatusChanged", {
+        orderId: data.orderId,
+        newStatus: "confirmed",
+      });
+      callback({ success: true, order: result });
     } catch (error) {
       console.error("❌ Accept order error:", error);
       callback({ success: false, message: "Failed to accept order" });
@@ -340,18 +346,62 @@ export const orderHandler = (io, socket) => {
         },
       );
 
-      io.to(`order-${data.orderId}`).emit('orderRejected', {orderId: data.orderId, reason: data.reason})
-      callback({success: true})
-      
-
+      io.to(`order-${data.orderId}`).emit("orderRejected", {
+        orderId: data.orderId,
+        reason: data.reason,
+      });
+      io.to("admins").emit("orderStatusChanged", {
+        orderId: data.orderId,
+        newStatus: "cancelled",
+      });
+      callback({ success: true });
     } catch (error) {
       console.error("❌ Reject order error:", error);
       callback({ success: false, message: "Failed to reject order" });
     }
   });
 
+  // Order status update hcche kintu live stat gula kibhabe pabo, database e o rakhte hobe and socket diyeo pete hobe
+  socket.on("getLiveStats", async (callback) => {
+    try {
+      if (!socket.isAdmin) {
+        return callback({ success: false, message: "Unauthorized" });
+      }
+      const ordersCollection = getCollection("orders");
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
 
+      const stats = {
+        totalToday: await ordersCollection.countDocuments({
+          createdAt: { $gte: today },
+        }),
+        pending: await ordersCollection.countDocuments({ status: "pending" }),
+        confirmed: await ordersCollection.countDocuments({
+          status: "confirmed",
+        }),
+        preparing: await ordersCollection.countDocuments({
+          status: "preparing",
+        }),
+        ready: await ordersCollection.countDocuments({ status: "ready" }),
+        outForDelivery: await ordersCollection.countDocuments({
+          status: "out_for_delivery",
+        }),
+        delivered: await ordersCollection.countDocuments({
+          status: "delivered",
+        }),
+        cancelled: await ordersCollection.countDocuments({
+          status: "cancelled",
+        }),
+      };
 
+      // stats gula k amar pete hobe, socket diye jodi pete chai, socket.on diye tw ami event k on kore felsi, so ekhane ami emit korte parbo listen korte parbo
+
+      callback({ success: true, stats });
+    } catch (error) {
+      console.error("❌ Get stats error:", error);
+      callback({ success: false, message: "Failed to load stats" });
+    }
+  });
 };
 
 // Jotogula on likhsi er corresponding ekTa kore emit thakbe, ekTa event on hocche mane she event ta emit hocche kothaw, event kew pathabe r kew listen korbe, ei kaj Ta cholte thakbe

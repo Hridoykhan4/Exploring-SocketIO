@@ -3,12 +3,20 @@ export const validateOrder = (data) => {
     return { valid: false, message: "Customer name is required" };
   if (!data?.customerPhone?.trim())
     return { valid: false, message: "Customer phone number is required" };
-  if (!data?.address?.trim())
+  if (!data?.customerAddress?.trim())
     return { valid: false, message: "Customer address is required" };
   if (!Array.isArray(data?.items) || data?.items?.length === 0)
     return { valid: false, message: "Order at least one item !!" };
-  
-    
+
+  for (let i = 0; i < data?.items.length; i++) {
+    const item = data.items[i];
+    if (!item.name || !item.quantity || !item.price) {
+      return { valid: false, message: `Item ${i + 1} is incomplete` };
+    }
+    if (item.quantity <= 0 || item.price <= 0) {
+      return { valid: false, message: `Item ${i + 1} has invalid values` };
+    }
+  }
 
   return { valid: true };
 };
@@ -25,22 +33,21 @@ export const generateOrderId = () => {
   return `ORD-${year}${month}${day}-${random}`;
 };
 
-
-
 export const calculateTotal = (items) => {
   const subTotal = items.reduce(
     (total, item) => total + item.price * item.quantity,
     0,
   );
-  const vat = subTotal * 0.1;
-  const deliveryCost = 50;
-  const total = subTotal + vat + deliveryCost;
-  return {
+  const tax = subTotal * 0.1;
+  const deliveryCost = 10;
+  const total = subTotal + tax + deliveryCost;
+  const info = {
     subTotal: Math.round(subTotal * 100) / 100,
     tax: Math.round(tax * 100) / 100,
-    deliveryCost,
+    deliveryFee: deliveryCost,
     totalAmount: Math.round(total * 100) / 100,
   };
+  return info;
 };
 
 export const createOrderDocument = (orderData, orderId, total) => {
@@ -48,12 +55,12 @@ export const createOrderDocument = (orderData, orderId, total) => {
     orderId,
     customerName: orderData?.customerName?.trim(),
     customerPhone: orderData?.customerPhone?.trim(),
-    address: orderData?.address?.trim(),
+    customerAddress: orderData?.customerAddress?.trim(),
     items: orderData?.items,
     subTotal: total?.subTotal,
-    tax: total?.total,
-    deliveryCost: total?.deliveryCost,
-    total: total?.totalAmount,
+    tax: total?.tax,
+    deliveryFee: total?.deliveryFee,
+    totalAmount: total?.totalAmount,
     notes: orderData?.notes,
     paymentMethod: orderData?.paymentMethod,
     paymentStatus: "pending",

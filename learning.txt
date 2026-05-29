@@ -1,0 +1,28 @@
+Socket.IO use korlei pure WebSocket implement kora hoy na.
+Apni real-time bidirectional communication implement korsen, and Socket.IO normally WebSocket transport use korte pare, but Socket.IO itself plain WebSocket implementation na. Official Socket.IO docs explicitly bole: “Socket.IO is NOT a WebSocket implementation.” It uses WebSocket when possible, but extra protocol/metadata add kore; tai normal WebSocket client Socket.IO server-e connect korte parbe na, and Socket.IO client plain WebSocket server-e connect korte parbe na.
+
+
+WebSocket ki?
+
+WebSocket holo browser/client ar server-er moddhe ekta persistent two-way connection.
+
+Normal HTTP te:
+
+Client request kore -> Server response dey -> connection sesh
+
+WebSocket e:
+
+Client connects once -> connection open thake -> client/server dujon-e jokhon iccha message pathate pare
+
+Socket.IO ki?
+
+Socket.IO holo ekta library/framework jeita real-time communication easy kore.
+it is a library for low-latency, bidirectional, event-based communication. It can use multiple low-level transports: HTTP long-polling, WebSocket, and WebTransport.
+
+Ami Socket.IO diye real-time communication implement korechi. Under the hood eta WebSocket use korte pare, but eta pure/native WebSocket implementation na.
+
+It is a real-time app built with Socket.IO, which uses WebSocket as one of its transports.
+
+WebSocket holo protocol. Socket.IO holo library. Socket.IO WebSocket use korte pare, but Socket.IO nije WebSocket na. Ami project-e raw WebSocket na, Socket.IO based real-time communication implement korechi
+
+
