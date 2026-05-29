@@ -25,4 +25,201 @@ It is a real-time app built with Socket.IO, which uses WebSocket as one of its t
 
 WebSocket holo protocol. Socket.IO holo library. Socket.IO WebSocket use korte pare, but Socket.IO nije WebSocket na. Ami project-e raw WebSocket na, Socket.IO based real-time communication implement korechi
 
+----------------
+
+
+on vs emit one-shot explanation
+on = listen kora
+io.on("connection", (socket) => {
+  ...
+});
+
+Eta listener. Client connect korlei callback run korbe.
+
+io.on("connection") = every new client connection er jonno run hobe
+
+Eta ekbar code execute kore shesh na. Server jotodin running, notun client ashlei eta trigger hobe. Official docs e connection event client connection hole fire hoy.
+
+socket = ekjon connected user/browser/tab
+io.on("connection", (socket) => {
+  console.log(socket.id);
+});
+
+Ekta browser tab connect korle ekta socket object pabe.
+
+Example:
+
+Browser tab 1 -> socket.id = abc123
+Browser tab 2 -> socket.id = xyz789
+
+------------------
+emit = event pathano
+Fast mental model
+Code	Meaning
+socket.on("event", cb)	ei event ashbe, ami listen korbo
+socket.emit("event", data)	ei event ami pathacchi
+io.emit("event", data)	shob connected client ke pathao
+socket.emit(...)	sudhu ei client ke pathao
+socket.broadcast.emit(...)	ei client chara baki shobai ke pathao
+
+Socket.IO server er io.emit() all connected clients e event pathay.
+----------------
+
+--------------------------------------------------
+emit = event pathao / trigger koro
+on = event receive korar jonno listen koro
+join = socket ke room/group e dhukao
+to(room).emit = oi room/group er member der event pathao
+callback = je emit korse take direct reply dao
+--------------------------------------------------
+
+
+
+
+
+
+
+
+----==========-----------
+
+io vs socket
+
+Tomar code e:
+
+export const orderHandler = (io, socket) => {
+io
+
+io mane full Socket.IO server.
+
+Eta diye tumi sob client/room/admin/customer ke target korte paro.
+
+Example:
+
+io.to("admins").emit("newOrder", { order });
+
+Meaning:
+
+"admins" room e joto socket ache, sobaike newOrder event pathao.
+
+----==========-----------
+
+
+
+
+
+-------------------
+io.on("connection")
+
+Eta tomar orderHandler file e nai, server file e ase.
+
+io.on("connection", (socket) => {
+  orderHandler(io, socket);
+});
+
+Eta custom event na. Eta Socket.IO built-in connection event.
+
+Meaning:
+
+Notun client connect korle ei function run korbe.
+
+Ei function-er vitore je socket pawa jay, eta oi newly connected user-er socket.
+
+
+
+```````
+socket.join(...)
+socket.join(`order-${orderId}`);
+socket.join("customers");
+
+join mane event pathano na.
+join mane current socket ke ekta room/group e dhukano.
+Example:
+
+socket.join(`order-${orderId}`);
+
+Meaning:
+
+Ei customer ke ei specific order-er room e dhukao.
+
+Suppose order id:
+
+ORD-20260529-123
+
+Room name hobe:
+
+order-ORD-20260529-123
+`````
+
+
+
+
+
+
+
+
+
+
+
+````````````````````````````````````
+io.to(`order-${orderId}`).emit("statusUpdated", data);
+
+Ei specific order-er room e jara ache, shudhu tader status update pathao.
+
+socket.join("admins")
+
+Tomar admin login e:
+
+socket.join("admins");
+
+Meaning:
+
+Ei socket admin room e dhuklo.
+
+Tarpor customer order place korle:
+
+io.to("admins").emit("newOrder", { order });
+
+All logged-in admins instant newOrder event pabe.
+
+io.to("admins").emit("newOrder", { order })
+
+Tomar placeOrder flow:
+
+io.to("admins").emit("newOrder", { order });
+
+Meaning:
+
+admins room e joto socket ache, sobaike newOrder event pathao.
+
+````````````````````````````````````
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----------------------------------
+Customer emits "placeOrder"
+        ↓
+Server receives with socket.on("placeOrder")
+        ↓
+Server DB te order save kore
+        ↓
+Customer ke order room e join koray
+        ↓
+Server admins room e "newOrder" emit kore
+        ↓
+Admin frontend socket.on("newOrder") diye receive kore
+
+
 

@@ -112,6 +112,8 @@ export const orderHandler = (io, socket) => {
       // Order j update holo sheTa amaderk janan dite hbe
       // etwkkhn on kortasilam, ekhn emit kortasi, customer end theke emit korechi, admin end theke she listen korbe
       // Order cancel hoile admin jodi na jane loss
+
+      // Ei order-er room e jara ache, tader orderCancelled er event pathao.
       io.to(`order-${data?.orderId}`).emit("orderCancelled", {
         orderId: data?.orderId,
       });

@@ -69,7 +69,7 @@ export const createOrderDocument = (orderData, orderId, total) => {
       {
         status: "pending",
         timeStamp: new Date(),
-        by: "customer",
+        by: `Ordered by: ${orderData?.customerName?.trim() || 'Customer'}`,
         note: "Order Placed",
       },
     ],

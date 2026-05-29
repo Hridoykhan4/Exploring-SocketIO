@@ -28,6 +28,7 @@ const io = new Server(server, {
 io.on("connection", (socket) => {
   // console.log("User connected", socket.id);
   // Socket trigger hoise
+  // Eta server theke oi specific connected client ke event pathay.
   socket.emit("connected", {
     message: `User ${socket.id} is successfully ☑️ Connected`,
   });
