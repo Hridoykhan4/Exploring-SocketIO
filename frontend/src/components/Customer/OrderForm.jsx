@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 
-const OrderForm = ({ cart, socket, onShowNotification }) => {
+const OrderForm = ({ cart, socket, onShowNotification, onOrderPlaced }) => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
@@ -90,6 +90,8 @@ const OrderForm = ({ cart, socket, onShowNotification }) => {
 
             if (response.success) {
                 onShowNotification('Order placed successfully! 🎉', 'success');
+                // Order hoye geche -> cart khali kore di, jate same item abar order na hoy
+                onOrderPlaced?.();
                 // Navigate to tracking page
                 setTimeout(() => {
                     navigate(`/track/${response.order.orderId}`);

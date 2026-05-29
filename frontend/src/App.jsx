@@ -137,6 +137,7 @@ const App = () => {
                   cart={cart}
                   socket={socket}
                   onShowNotification={showNotification}
+                  onOrderPlaced={() => setCart([])}
                 />
               </>
             }

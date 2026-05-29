@@ -10,7 +10,7 @@ const OrderHistory = ({ socket, onShowNotification }) => {
     const [filterStatus, setFilterStatus] = useState('all');
     const [customerPhone, setCustomerPhone] = useState(getSavedCustomerPhone);
     const [showPhoneInput, setShowPhoneInput] = useState(() => !getSavedCustomerPhone());
-    
+
     const loadOrders = useCallback((phone) => {
         if (!socket) {
             setLoading(false);
@@ -188,8 +188,8 @@ const OrderHistory = ({ socket, onShowNotification }) => {
                             key={tab.key}
                             onClick={() => setFilterStatus(tab.key)}
                             className={`px-6 py-2 rounded-lg font-medium transition ${filterStatus === tab.key
-                                    ? 'bg-indigo-600 text-white'
-                                    : 'bg-white text-gray-700 hover:bg-gray-100'
+                                ? 'bg-indigo-600 text-white'
+                                : 'bg-white text-gray-700 hover:bg-gray-100'
                                 }`}
                         >
                             {tab.label} ({tab.count})
