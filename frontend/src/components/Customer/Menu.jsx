@@ -13,8 +13,8 @@ const Menu = ({ onAddToCart }) => {
     return (
         <div className="container mx-auto px-4 py-8">
             {/* Hero Section */}
-            <div className="text-center mb-12">
-                <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
+            <div className="text-center mb-12 animate-enter">
+                <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-linear-to-r from-indigo-600 via-violet-600 to-fuchsia-600">
                     Welcome to FoodTrack 🍽️
                 </h1>
                 <p className="text-xl text-gray-600">
@@ -29,7 +29,7 @@ const Menu = ({ onAddToCart }) => {
                         key={category}
                         onClick={() => setSelectedCategory(category)}
                         className={`px-6 py-2 rounded-full font-medium transition transform hover:scale-105 ${selectedCategory === category
-                                ? "bg-blue-600 text-white shadow-lg"
+                                ? "bg-indigo-600 text-white shadow-lg"
                                 : "bg-white text-gray-700 hover:bg-gray-100 shadow"
                             }`}
                     >
@@ -46,7 +46,7 @@ const Menu = ({ onAddToCart }) => {
                         className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2"
                     >
                         {/* Item Image/Emoji */}
-                        <div className="bg-linear-to-br from-blue-50 to-blue-100 h-40 flex items-center justify-center">
+                        <div className="bg-linear-to-br from-indigo-50 to-indigo-100 h-40 flex items-center justify-center">
                             <span className="text-7xl">{item.image}</span>
                         </div>
 
@@ -60,12 +60,12 @@ const Menu = ({ onAddToCart }) => {
                             </p>
 
                             <div className="flex items-center justify-between">
-                                <span className="text-2xl font-bold text-blue-600">
+                                <span className="text-2xl font-bold text-indigo-600">
                                     ${item.price.toFixed(2)}
                                 </span>
                                 <button
                                     onClick={() => onAddToCart(item)}
-                                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition transform hover:scale-105 active:scale-95"
+                                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition transform hover:scale-105 active:scale-95"
                                 >
                                     Add to Cart
                                 </button>

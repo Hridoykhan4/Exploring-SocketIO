@@ -19,7 +19,7 @@ const OrderTracking = ({ socket, onShowNotification }) => {
     const navigate = useNavigate();
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
-    console.log(order);
+    // console.log(order);
     useEffect(() => {
         if (!socket || !orderId) return;
 
@@ -97,7 +97,7 @@ const OrderTracking = ({ socket, onShowNotification }) => {
     const getStatusColor = (status) => {
         const colors = {
             pending: 'bg-yellow-500',
-            confirmed: 'bg-blue-500',
+            confirmed: 'bg-indigo-500',
             preparing: 'bg-orange-500',
             ready: 'bg-green-500',
             out_for_delivery: 'bg-purple-500',
@@ -178,7 +178,7 @@ const OrderTracking = ({ socket, onShowNotification }) => {
                                 <code className="bg-gray-100 px-3 py-1 rounded text-sm font-mono">{orderId}</code>
                                 <button
                                     onClick={copyOrderId}
-                                    className="text-blue-600 hover:text-blue-700"
+                                    className="text-indigo-600 hover:text-indigo-700"
                                     title="Copy"
                                 >
                                     📋
@@ -276,7 +276,7 @@ const OrderTracking = ({ socket, onShowNotification }) => {
                         </div>
                         <div className="flex justify-between text-xl font-bold border-t pt-2">
                             <span>Total</span>
-                            <span className="text-blue-600">${order.totalAmount.toFixed(2)}</span>
+                            <span className="text-indigo-600">${order.totalAmount.toFixed(2)}</span>
                         </div>
                     </div>
                 </div>

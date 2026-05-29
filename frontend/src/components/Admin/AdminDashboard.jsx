@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import OrderCard from './OrderCard';
 import OrderDetail from './OrderDetails';
-import ConnectionStatus from '../common/ConnectionStatus';
+import ConnectionStatus from '../Common/ConnectionStatus';
 
 const StatCard = ({ label, value, color, icon }) => (
     <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100/50 hover:shadow-md transition-all duration-300 group">

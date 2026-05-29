@@ -1,5 +1,6 @@
 // server.js
-// Main server file - Express + MongoDB (Socket.IO will be added in videos)
+// Bootstrap file -- Express + Socket.IO + MongoDB ke ek shathe joge ar server chalu kore.
+// Business logic ekhane nai: REST -> routes/controllers, real-time -> socket/orderHandler.
 
 import dotenv from "dotenv";
 import { Server } from "socket.io";
@@ -7,11 +8,15 @@ import express from "express";
 import cors from "cors";
 // I have imported it
 import http from "http";
-import { connectDB, getCollection, closeDB } from "./config/database.js";
+import { connectDB, closeDB } from "./config/database.js";
 import { orderHandler } from "./socket/orderHandler.js";
+import orderRoutes from "./routes/orderRoutes.js";
 
 // Load environment variables
 dotenv.config();
+
+// Production e sudhu nijeder frontend allow korbo, dev e shob (*)
+const ALLOWED_ORIGIN = process.env.CLIENT_URL || "*";
 
 // // Create Express app
 const app = express();
@@ -19,9 +24,14 @@ const app = express();
 // Server created of socketIO
 const server = http.createServer(app);
 
+// // Middleware -- routes / socket er aage boshano dorkar
+app.use(cors({ origin: ALLOWED_ORIGIN, credentials: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 // Initialization
 const io = new Server(server, {
-  cors: { origin: "*", methods: ["GET", "POST"] },
+  cors: { origin: ALLOWED_ORIGIN, methods: ["GET", "POST"] },
 });
 
 // Socket er connection ON korlam
@@ -35,10 +45,6 @@ io.on("connection", (socket) => {
   // For handling the Orders
   orderHandler(io, socket);
 });
-// // Middleware
-app.use(cors({ origin: process.env.CLIENT_URL || "*", credentials: true }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 // // ==========================================
 // // REST API ROUTES
@@ -53,55 +59,8 @@ app.get("/health", (req, res) => {
   });
 });
 
-// // Get all orders
-app.get("/api/orders", async (req, res) => {
-  try {
-    const ordersCollection = getCollection("orders");
-    const orders = await ordersCollection
-      .find({})
-      .sort({ createdAt: -1 })
-      .limit(20)
-      .toArray();
-
-    res.json({
-      success: true,
-      count: orders.length,
-      orders,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-});
-
-// // Get single order by ID
-app.get("/api/orders/:orderId", async (req, res) => {
-  try {
-    const ordersCollection = getCollection("orders");
-    const order = await ordersCollection.findOne({
-      orderId: req.params.orderId,
-    });
-
-    if (!order) {
-      return res.status(404).json({
-        success: false,
-        message: "Order not found",
-      });
-    }
-
-    res.json({
-      success: true,
-      order,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-});
+// // Order related REST routes (controller/model e logic ase)
+app.use("/api/orders", orderRoutes);
 
 // // 404 handler
 app.use((req, res) => {
@@ -115,14 +74,15 @@ app.use((req, res) => {
 // // ERROR HANDLING
 // // ==========================================
 
+// uncaughtException -> process broken state e, log kore exit kora nirapod
 process.on("uncaughtException", (error) => {
   console.error("💥 Uncaught Exception:", error);
   process.exit(1);
 });
 
+// unhandledRejection -> sudhu log kori; ekTa promise miss korle puro server na maral
 process.on("unhandledRejection", (reason) => {
   console.error("💥 Unhandled Rejection:", reason);
-  process.exit(1);
 });
 
 // // Graceful shutdown

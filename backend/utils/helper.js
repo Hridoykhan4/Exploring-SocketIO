@@ -68,7 +68,7 @@ export const createOrderDocument = (orderData, orderId, total) => {
     statusHistory: [
       {
         status: "pending",
-        timeStamp: new Date(),
+        timestamp: new Date(),
         by: `Ordered by: ${orderData?.customerName?.trim() || 'Customer'}`,
         note: "Order Placed",
       },

@@ -1,4 +1,18 @@
-import { getCollection } from "../config/database.js";
+// socket/orderHandler.js
+// CONTROLLER layer for real-time (Socket.IO) events.
+// Database query ekhane direct kori na -- model (orderModel.js) ke call kori.
+// Ei file er kaj: event listen kora, validate kora, model ke data bola, room e emit kora.
+
+import {
+  insertOrder,
+  findOrderById,
+  findOrdersByPhone,
+  findOrders,
+  updateOrderStatus,
+  updateOrderFields,
+  countSince,
+  countByStatus,
+} from "../models/orderModel.js";
 import {
   calculateTotal,
   createOrderDocument,
@@ -32,8 +46,7 @@ export const orderHandler = (io, socket) => {
       const total = calculateTotal(data?.items);
       const orderId = generateOrderId();
       const order = createOrderDocument(data, orderId, total);
-      const ordersCollection = getCollection("orders");
-      await ordersCollection.insertOne(order);
+      await insertOrder(order);
       // Room e jeno join korte pare, tahole baki event gula shee listen korte parbe
       socket.join(`order-${orderId}`);
       socket.join("customers");
@@ -58,10 +71,7 @@ export const orderHandler = (io, socket) => {
   // Front end theke ekTa order emit kore dibo, order Ta amar track korte hobe tokhon server bolbe o accha ami listen / on  korchi , amra order-${349} ei room e achi
   socket.on("trackOrder", async (data, callback) => {
     try {
-      const ordersCollection = getCollection("orders");
-      const order = await ordersCollection.findOne({
-        orderId: data?.orderId,
-      });
+      const order = await findOrderById(data?.orderId);
       if (!order)
         return callback({ success: false, message: "Order Not Found" });
       // Order thakle join korbo, keno karon amader order er ekTa event ase tw, ei order er event Ta te amra join korbo
@@ -79,10 +89,7 @@ export const orderHandler = (io, socket) => {
   // ETa amader event, eTa amra listen korbo, ei j ami listen korlam , ei listen korar jnne kothaw theke ekTa emit korbo
   socket.on("cancelOrder", async (data, callback) => {
     try {
-      const ordersCollection = getCollection("orders");
-      const order = await ordersCollection.findOne({
-        orderId: data?.orderId,
-      });
+      const order = await findOrderById(data?.orderId);
       if (!order)
         return callback({ success: false, message: "Order Not Found" });
       if (!["pending", "confirmed"].includes(order.status)) {
@@ -91,23 +98,12 @@ export const orderHandler = (io, socket) => {
           message: "Can not cancel the order",
         });
       }
-      await ordersCollection.updateOne(
-        { orderId: data?.orderId },
-        {
-          $set: {
-            status: "cancelled",
-            updatedAt: new Date(),
-          },
-          $push: {
-            statusHistory: {
-              status: "cancelled",
-              timeStamp: new Date(),
-              by: socket.id,
-              note: data.reason || "Cancelled by customer",
-            },
-          },
-        },
-      );
+      await updateOrderStatus(data?.orderId, "cancelled", {
+        status: "cancelled",
+        timestamp: new Date(),
+        by: socket.id,
+        note: data.reason || "Cancelled by customer",
+      });
 
       // Order j update holo sheTa amaderk janan dite hbe
       // etwkkhn on kortasilam, ekhn emit kortasi, customer end theke emit korechi, admin end theke she listen korbe
@@ -136,14 +132,8 @@ export const orderHandler = (io, socket) => {
   // Admin er jnne jno easy hoy, admin jokhon jabe, ei event tak listen korle customer er kotogula order ase ki ase na ase sheTa admin dekhte parbe
   socket.on("getMyOrders", async (data, callback) => {
     try {
-      const ordersCollection = getCollection("orders");
-      const orders = await ordersCollection
-        .find({ customerPhone: data?.customerPhone })
-        .sort({ createdAt: -1 })
-        .limit(50)
-        .toArray();
+      const orders = await findOrdersByPhone(data?.customerPhone, 50);
       callback({ success: true, orders });
-      console.log(orders);
     } catch (err) {
       console.error("[ Get Orders Failed ] ", err);
       callback({
@@ -164,7 +154,7 @@ export const orderHandler = (io, socket) => {
         socket.isAdmin = true;
         // Admin er room e join kortasi, jodi kono room er moddhe theke info chai taile oi room er bhitor join koraite hobe
         socket.join("admins");
-        console.log(`Admin Logged in: ${socket.id}`);
+        // console.log(`Admin Logged in: ${socket.id}`);
         callback({ success: true });
       } else {
         callback({ success: false, message: "Invalid Password" });
@@ -179,13 +169,8 @@ export const orderHandler = (io, socket) => {
     try {
       if (!socket.isAdmin)
         return callback({ success: false, message: "Unauthorized" });
-      const ordersCollection = getCollection("orders");
       const filter = data?.status ? { status: data?.status } : {};
-      const orders = await ordersCollection
-        .find(filter)
-        .sort({ createdAt: -1 })
-        .limit(data?.limit || 50)
-        .toArray();
+      const orders = await findOrders(filter, data?.limit || 50);
       callback({ success: true, orders });
     } catch (err) {
       console.error("❌ Get all orders error:", err);
@@ -201,8 +186,7 @@ export const orderHandler = (io, socket) => {
       if (!socket.isAdmin) {
         return callback({ success: false, message: "Unauthorized" });
       }
-      const ordersCollection = getCollection("orders");
-      const order = await ordersCollection.findOne({ orderId: data.orderId });
+      const order = await findOrderById(data.orderId);
 
       if (!order)
         return callback({ success: false, message: `Order Not Found` });
@@ -214,21 +198,12 @@ export const orderHandler = (io, socket) => {
         });
       }
 
-      const result = await ordersCollection.findOneAndUpdate(
-        { orderId: data.orderId },
-        {
-          $set: { status: data.newStatus, updatedAt: new Date() },
-          $push: {
-            statusHistory: {
-              status: data?.newStatus,
-              timeStamp: new Date(),
-              by: socket.id,
-              note: "Status updated by Admin",
-            },
-          },
-        },
-        { returnDocument: "after" },
-      );
+      const result = await updateOrderStatus(data.orderId, data.newStatus, {
+        status: data?.newStatus,
+        timestamp: new Date(),
+        by: socket.id,
+        note: "Status updated by Admin",
+      });
 
       // Update j hoilo eiTa order-id te paThano lagbe, database theke ami data pull kore nibo na, but ami data oi porjontw poicchaite hbe
       io.to(`order-${data.orderId}`).emit("statusUpdated", {
@@ -241,7 +216,7 @@ export const orderHandler = (io, socket) => {
       // Jehutu admin flow tai socket.io
       /* Io hocche oi server Ta jeTa diye frontend r backend er communication maintain thaktase
       socket.to, jeta internally ase, internally she nijeke janaite partase , eTa server e j admin ase oee jantase, frontend theke kew listen kore nai, frontend er shathe kono connectoner dorkar nai, server e hcche
-      
+
       */
       //  Admin eshe ekhn emit korbe, emit kore admin k janate hbe order status j change hoise
       // eta j ami emit korlam kothaw ekTa ami listen korbo eTak
@@ -262,10 +237,7 @@ export const orderHandler = (io, socket) => {
       if (!socket.isAdmin) {
         return callback({ success: false, message: "Unauthorized" });
       }
-      const ordersCollection = getCollection("orders");
-      const order = await ordersCollection.findOne({
-        orderId: data.orderId,
-      });
+      const order = await findOrderById(data.orderId);
 
       if (!order || order.status !== "pending") {
         return callback({
@@ -275,24 +247,16 @@ export const orderHandler = (io, socket) => {
       }
 
       const estimatedTime = data.estimatedTime || 30;
-      const result = await ordersCollection.findOneAndUpdate(
-        { orderId: data.orderId },
+      const result = await updateOrderStatus(
+        data.orderId,
+        "confirmed",
         {
-          $set: {
-            status: "confirmed",
-            estimatedTime,
-            updatedAt: new Date(),
-          },
-          $push: {
-            statusHistory: {
-              status: "confirmed",
-              timeStamp: new Date(),
-              by: socket.id,
-              note: `Accepted with ${estimatedTime} min estimated time`,
-            },
-          },
+          status: "confirmed",
+          timestamp: new Date(),
+          by: socket.id,
+          note: `Accepted with ${estimatedTime} min estimated time`,
         },
-        { returnDocument: "after" },
+        { estimatedTime },
       );
 
       // Order number j room Ta te ase oikhane pathate hbe, room e socket kaj kore dilo
@@ -318,10 +282,7 @@ export const orderHandler = (io, socket) => {
       if (!socket.isAdmin) {
         return callback({ success: false, message: "Unauthorized" });
       }
-      const ordersCollection = getCollection("orders");
-      const order = await ordersCollection.findOne({
-        orderId: data.orderId,
-      });
+      const order = await findOrderById(data.orderId);
 
       if (!order || order.status !== "pending") {
         return callback({
@@ -330,23 +291,12 @@ export const orderHandler = (io, socket) => {
         });
       }
 
-      await ordersCollection.updateOne(
-        { orderId: data.orderId },
-        {
-          $set: {
-            status: "cancelled",
-            updatedAt: new Date(),
-          },
-          $push: {
-            statusHistory: {
-              status: "cancelled",
-              timeStamp: new Date(),
-              by: socket.id,
-              note: `Rejected ${data.reason}`,
-            },
-          },
-        },
-      );
+      await updateOrderStatus(data.orderId, "cancelled", {
+        status: "cancelled",
+        timestamp: new Date(),
+        by: socket.id,
+        note: `Rejected ${data.reason}`,
+      });
 
       io.to(`order-${data.orderId}`).emit("orderRejected", {
         orderId: data.orderId,
@@ -363,37 +313,63 @@ export const orderHandler = (io, socket) => {
     }
   });
 
+  // Set / update estimated delivery time (status na palTeo).
+  // OrderDetails modal theke emit hoy; customer er OrderTracking "estimatedTimeUpdated" listen kore.
+  socket.on("setEstimatedTime", async (data, callback) => {
+    try {
+      if (!socket.isAdmin) {
+        return callback({ success: false, message: "Unauthorized" });
+      }
+      const estimatedTime = parseInt(data?.estimatedTime, 10);
+      if (isNaN(estimatedTime) || estimatedTime < 5) {
+        return callback({ success: false, message: "Invalid estimated time" });
+      }
+
+      const order = await findOrderById(data?.orderId);
+      if (!order)
+        return callback({ success: false, message: "Order Not Found" });
+
+      const result = await updateOrderFields(
+        data.orderId,
+        { estimatedTime },
+        {
+          status: order.status,
+          timestamp: new Date(),
+          by: socket.id,
+          note: `Estimated time set to ${estimatedTime} min`,
+        },
+      );
+
+      // Customer er tracking page e live update -- ei event Ta OrderTracking listen kore
+      io.to(`order-${data.orderId}`).emit("estimatedTimeUpdated", {
+        orderId: data.orderId,
+        estimatedTime,
+      });
+      callback({ success: true, order: result });
+    } catch (error) {
+      console.error("❌ Set estimated time error:", error);
+      callback({ success: false, message: "Failed to update time" });
+    }
+  });
+
   // Order status update hcche kintu live stat gula kibhabe pabo, database e o rakhte hobe and socket diyeo pete hobe
   socket.on("getLiveStats", async (callback) => {
     try {
       if (!socket.isAdmin) {
         return callback({ success: false, message: "Unauthorized" });
       }
-      const ordersCollection = getCollection("orders");
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
       const stats = {
-        totalToday: await ordersCollection.countDocuments({
-          createdAt: { $gte: today },
-        }),
-        pending: await ordersCollection.countDocuments({ status: "pending" }),
-        confirmed: await ordersCollection.countDocuments({
-          status: "confirmed",
-        }),
-        preparing: await ordersCollection.countDocuments({
-          status: "preparing",
-        }),
-        ready: await ordersCollection.countDocuments({ status: "ready" }),
-        outForDelivery: await ordersCollection.countDocuments({
-          status: "out_for_delivery",
-        }),
-        delivered: await ordersCollection.countDocuments({
-          status: "delivered",
-        }),
-        cancelled: await ordersCollection.countDocuments({
-          status: "cancelled",
-        }),
+        totalToday: await countSince(today),
+        pending: await countByStatus("pending"),
+        confirmed: await countByStatus("confirmed"),
+        preparing: await countByStatus("preparing"),
+        ready: await countByStatus("ready"),
+        outForDelivery: await countByStatus("out_for_delivery"),
+        delivered: await countByStatus("delivered"),
+        cancelled: await countByStatus("cancelled"),
       };
 
       // stats gula k amar pete hobe, socket diye jodi pete chai, socket.on diye tw ami event k on kore felsi, so ekhane ami emit korte parbo listen korte parbo

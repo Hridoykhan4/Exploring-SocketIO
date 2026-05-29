@@ -14,12 +14,12 @@ const useSocket = () => {
     useEffect(() => {
         const handleConnect = () => {
             setConnected(true);
-            console.log("Connected to server: ", socketInstance.id);
+            // console.log("Connected to server: ", socketInstance.id);
         };
 
         const handleDisconnect = () => {
             setConnected(false);
-            console.log("Disconnected from socket server");
+            // console.log("Disconnected from socket server");
         };
 
         const handleServerMessage = (data) => {

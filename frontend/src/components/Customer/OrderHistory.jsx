@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router';
 const getSavedCustomerPhone = () => localStorage.getItem('customerPhone') || '';
 
 const OrderHistory = ({ socket, onShowNotification }) => {
-    console.log(socket);
     const navigate = useNavigate();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(() => Boolean(getSavedCustomerPhone()));
@@ -61,7 +60,7 @@ const OrderHistory = ({ socket, onShowNotification }) => {
     const getStatusBadge = (status) => {
         const badges = {
             pending: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Pending' },
-            confirmed: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Confirmed' },
+            confirmed: { bg: 'bg-indigo-100', text: 'text-indigo-800', label: 'Confirmed' },
             preparing: { bg: 'bg-orange-100', text: 'text-orange-800', label: 'Preparing' },
             ready: { bg: 'bg-green-100', text: 'text-green-800', label: 'Ready' },
             out_for_delivery: { bg: 'bg-purple-100', text: 'text-purple-800', label: 'On the Way' },
@@ -122,14 +121,14 @@ const OrderHistory = ({ socket, onShowNotification }) => {
                                     type="tel"
                                     value={customerPhone}
                                     onChange={(e) => setCustomerPhone(e.target.value)}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                                     placeholder="+1234567890"
                                 />
                             </div>
 
                             <button
                                 type="submit"
-                                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition"
+                                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-medium transition"
                             >
                                 View My Orders
                             </button>
@@ -189,7 +188,7 @@ const OrderHistory = ({ socket, onShowNotification }) => {
                             key={tab.key}
                             onClick={() => setFilterStatus(tab.key)}
                             className={`px-6 py-2 rounded-lg font-medium transition ${filterStatus === tab.key
-                                    ? 'bg-blue-600 text-white'
+                                    ? 'bg-indigo-600 text-white'
                                     : 'bg-white text-gray-700 hover:bg-gray-100'
                                 }`}
                         >
@@ -206,7 +205,7 @@ const OrderHistory = ({ socket, onShowNotification }) => {
                         <p className="text-gray-600 mb-6">You haven't placed any orders yet</p>
                         <button
                             onClick={() => navigate('/')}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium"
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg font-medium"
                         >
                             Order Now
                         </button>
@@ -228,7 +227,7 @@ const OrderHistory = ({ socket, onShowNotification }) => {
                                         <p className="text-sm text-gray-600">{formatDate(order.createdAt)}</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-2xl font-bold text-blue-600">${order.totalAmount.toFixed(2)}</p>
+                                        <p className="text-2xl font-bold text-indigo-600">${order.totalAmount.toFixed(2)}</p>
                                         <p className="text-sm text-gray-600">{order.items.length} items</p>
                                     </div>
                                 </div>
@@ -252,7 +251,7 @@ const OrderHistory = ({ socket, onShowNotification }) => {
                                             `Estimated: ${order.estimatedTime} min`
                                         )}
                                     </span>
-                                    <span className="text-blue-600 font-medium text-sm">
+                                    <span className="text-indigo-600 font-medium text-sm">
                                         View Details →
                                     </span>
                                 </div>

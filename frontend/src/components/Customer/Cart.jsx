@@ -9,7 +9,7 @@ const Cart = ({ cart, onUpdateQuantity, onRemoveItem, onClearCart }) => {
 
     const subtotal = calculateSubtotal();
     const tax = subtotal * 0.1;
-    const deliveryFee = 5.0;
+    const deliveryFee = 10;
     const total = subtotal + tax + deliveryFee;
 
     if (cart.length === 0) {
@@ -25,7 +25,7 @@ const Cart = ({ cart, onUpdateQuantity, onRemoveItem, onClearCart }) => {
                     </p>
                     <button
                         onClick={() => navigate("/")}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition"
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg font-medium transition"
                     >
                         Browse Menu
                     </button>
@@ -58,7 +58,7 @@ const Cart = ({ cart, onUpdateQuantity, onRemoveItem, onClearCart }) => {
                             >
                                 <div className="flex flex-col sm:flex-row gap-4">
                                     {/* Item Image */}
-                                    <div className="bg-linear-to-br from-blue-50 to-blue-100 w-full sm:w-24 h-40 sm:h-24 rounded-lg flex items-center justify-center shrink-0">
+                                    <div className="bg-linear-to-br from-indigo-50 to-indigo-100 w-full sm:w-24 h-40 sm:h-24 rounded-lg flex items-center justify-center shrink-0">
                                         <span className="text-4xl">{item.image}</span>
                                     </div>
 
@@ -80,7 +80,7 @@ const Cart = ({ cart, onUpdateQuantity, onRemoveItem, onClearCart }) => {
                                                 ×
                                             </button>
                                         </div>
-                                        <p className="text-xl font-bold text-blue-600 mb-2 sm:mb-0">
+                                        <p className="text-xl font-bold text-indigo-600 mb-2 sm:mb-0">
                                             ${item.price.toFixed(2)}
                                         </p>
                                     </div>
@@ -147,13 +147,13 @@ const Cart = ({ cart, onUpdateQuantity, onRemoveItem, onClearCart }) => {
                                 </div>
                                 <div className="border-t pt-3 flex justify-between text-xl font-bold text-gray-800">
                                     <span>Total</span>
-                                    <span className="text-blue-600">${total.toFixed(2)}</span>
+                                    <span className="text-indigo-600">${total.toFixed(2)}</span>
                                 </div>
                             </div>
 
                             <button
                                 onClick={() => navigate("/checkout")}
-                                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-lg font-bold text-lg transition transform hover:scale-105 active:scale-95"
+                                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-lg font-bold text-lg transition transform hover:scale-105 active:scale-95"
                             >
                                 Proceed to Checkout
                             </button>

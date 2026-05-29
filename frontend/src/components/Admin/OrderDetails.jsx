@@ -47,10 +47,12 @@ const OrderDetail = ({ order, onClose, socket, onShowNotification }) => {
                 border: "border-indigo-200",
                 label: "Confirmed",
             },
-            preparing: "bg-orange-50",
-            text: "text-orange-700",
-            border: "border-orange-200",
-            label: "Preparing",
+            preparing: {
+                bg: "bg-orange-50",
+                text: "text-orange-700",
+                border: "border-orange-200",
+                label: "Preparing",
+            },
             ready: {
                 bg: "bg-green-50",
                 text: "text-green-700",
@@ -350,7 +352,8 @@ const OrderDetail = ({ order, onClose, socket, onShowNotification }) => {
                                                 {history.status.replace("_", " ")}
                                             </p>
                                             <p className="text-xs font-bold text-slate-400 mt-0.5 uppercase tracking-wide">
-                                                {formatDate(history.timestamp)}
+                                                {/* notun doc e timestamp, purono doc e timeStamp -- duTar jnne fallback */}
+                                                {formatDate(history.timestamp || history.timeStamp)}
                                             </p>
                                             {history.note && (
                                                 <div className="mt-2 text-sm text-slate-600 bg-white p-3 rounded-lg border border-slate-200 inline-block shadow-sm">

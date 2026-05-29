@@ -14,22 +14,16 @@ import AdminDashboard from "./components/Admin/AdminDashboard";
 
 const App = () => {
   const { socket, connected } = useSocket()
-  console.log(socket);
-  const [cart, setCart] = useState([]);
+  // console.log(socket);
+  const [cart, setCart] = useState(() => JSON.parse(localStorage.getItem('cart')) || []);
   const [notification, setNotification] = useState(null);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   // Load cart from Local Storage
   useEffect(() => {
-    const savedCart = localStorage.getItem('cart');
-    console.log(JSON.parse(savedCart));
-    if (savedCart) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCart(JSON.parse(savedCart))
-    }
-
     // Check Admin Login status
     const adminStatus = localStorage.getItem('isAdmin');
     if (adminStatus === 'true') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsAdminLoggedIn(true)
     }
 
@@ -107,7 +101,6 @@ const App = () => {
             onClose={() => setNotification(null)}
           />
         )}
-
 
         <Routes>
           <Route

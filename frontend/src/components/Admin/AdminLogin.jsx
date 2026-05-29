@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import ConnectionStatus from '../common/ConnectionStatus';
+import ConnectionStatus from '../Common/ConnectionStatus';
 
 const AdminLogin = ({ socket, onLoginSuccess, onShowNotification }) => {
     const [password, setPassword] = useState('');
@@ -36,7 +36,7 @@ const AdminLogin = ({ socket, onLoginSuccess, onShowNotification }) => {
     };
 
     return (
-        <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
+        <div className="min-h-screen bg-linear-to-br from-indigo-50 to-indigo-100 flex items-center justify-center px-4">
             <ConnectionStatus connected={socket?.connected} isFixed={true} />
             <div className="max-w-md w-full">
                 <div className="bg-white rounded-2xl shadow-2xl p-8">
@@ -57,7 +57,7 @@ const AdminLogin = ({ socket, onLoginSuccess, onShowNotification }) => {
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                                 placeholder="Enter admin password"
                                 autoFocus
                             />
@@ -66,14 +66,14 @@ const AdminLogin = ({ socket, onLoginSuccess, onShowNotification }) => {
                         <button
                             type="submit"
                             disabled={loading || !socket?.connected}
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-bold text-lg transition transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-bold text-lg transition transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                         >
                             {loading ? 'Logging in...' : socket?.connected ? 'Login' : 'Connecting...'}
                         </button>
                     </form>
 
                     {/* Info */}
-                    <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                    <div className="mt-6 p-4 bg-indigo-50 rounded-lg">
                         <p className="text-sm text-gray-600 text-center">
                             💡 For testing: password is <code className="bg-white px-2 py-1 rounded font-mono text-xs">admin123</code>
                         </p>
@@ -81,7 +81,7 @@ const AdminLogin = ({ socket, onLoginSuccess, onShowNotification }) => {
 
                     {/* Back to Home */}
                     <div className="mt-6 text-center">
-                        <a href="/" className="text-blue-600 hover:text-blue-700 font-medium">
+                        <a href="/" className="text-indigo-600 hover:text-indigo-700 font-medium">
                             ← Back to Home
                         </a>
                     </div>

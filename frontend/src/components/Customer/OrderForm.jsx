@@ -109,7 +109,7 @@ const OrderForm = ({ cart, socket, onShowNotification }) => {
                     <p className="text-gray-600 mb-8">Add items to your cart before checkout</p>
                     <button
                         onClick={() => navigate('/')}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium"
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg font-medium"
                     >
                         Browse Menu
                     </button>
@@ -142,7 +142,7 @@ const OrderForm = ({ cart, socket, onShowNotification }) => {
                                             name="customerName"
                                             value={formData.customerName}
                                             onChange={handleChange}
-                                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.customerName ? 'border-red-500' : 'border-gray-300'
+                                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${errors.customerName ? 'border-red-500' : 'border-gray-300'
                                                 }`}
                                             placeholder="John Doe"
                                         />
@@ -161,7 +161,7 @@ const OrderForm = ({ cart, socket, onShowNotification }) => {
                                             name="customerPhone"
                                             value={formData.customerPhone}
                                             onChange={handleChange}
-                                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.customerPhone ? 'border-red-500' : 'border-gray-300'
+                                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${errors.customerPhone ? 'border-red-500' : 'border-gray-300'
                                                 }`}
                                             placeholder="+1234567890"
                                         />
@@ -180,7 +180,7 @@ const OrderForm = ({ cart, socket, onShowNotification }) => {
                                             value={formData.customerAddress}
                                             onChange={handleChange}
                                             rows="3"
-                                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.customerAddress ? 'border-red-500' : 'border-gray-300'
+                                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${errors.customerAddress ? 'border-red-500' : 'border-gray-300'
                                                 }`}
                                             placeholder="123 Main St, Apt 4B, City, ZIP"
                                         />
@@ -199,7 +199,7 @@ const OrderForm = ({ cart, socket, onShowNotification }) => {
                                             value={formData.notes}
                                             onChange={handleChange}
                                             rows="2"
-                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                                             placeholder="Ring doorbell twice, leave at door, etc."
                                         />
                                     </div>
@@ -214,7 +214,7 @@ const OrderForm = ({ cart, socket, onShowNotification }) => {
                                         <label
                                             key={method}
                                             className={`flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition ${formData.paymentMethod === method
-                                                    ? 'border-blue-600 bg-blue-50'
+                                                    ? 'border-indigo-600 bg-indigo-50'
                                                     : 'border-gray-300 hover:border-gray-400'
                                                 }`}
                                         >
@@ -224,7 +224,7 @@ const OrderForm = ({ cart, socket, onShowNotification }) => {
                                                 value={method}
                                                 checked={formData.paymentMethod === method}
                                                 onChange={handleChange}
-                                                className="w-5 h-5 text-blue-600"
+                                                className="w-5 h-5 text-indigo-600"
                                             />
                                             <span className="font-medium capitalize">{method} on Delivery</span>
                                         </label>
@@ -236,7 +236,7 @@ const OrderForm = ({ cart, socket, onShowNotification }) => {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-lg font-bold text-lg transition transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-lg font-bold text-lg transition transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                             >
                                 {loading ? 'Placing Order...' : 'Place Order'}
                             </button>
@@ -278,7 +278,7 @@ const OrderForm = ({ cart, socket, onShowNotification }) => {
                                 </div>
                                 <div className="border-t pt-2 flex justify-between text-xl font-bold">
                                     <span>Total</span>
-                                    <span className="text-blue-600">${totals.total.toFixed(2)}</span>
+                                    <span className="text-indigo-600">${totals.total.toFixed(2)}</span>
                                 </div>
                             </div>
                         </div>

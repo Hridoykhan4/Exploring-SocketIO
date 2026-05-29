@@ -9,6 +9,9 @@ let db = null;
 export const connectDB = async () => {
   try {
     client = new MongoClient(process.env.MONGODB_URI);
+    // Asholei connect kori -- na korle "Connected" log mittha hoy ar
+    // problem thakle eikhane fail kore (fail fast), pore na.
+    await client.connect();
     db = client.db();
     console.log("✅ MongoDB Connected Successfully");
     return db;

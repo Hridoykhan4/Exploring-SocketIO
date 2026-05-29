@@ -59,7 +59,7 @@ const OrderCard = ({ order, onViewDetails, onAccept, onReject, onUpdateStatus })
                     </p>
                 </div>
                 <div className="text-right">
-                    <p className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600">
+                    <p className="text-xl font-bold bg-clip-text text-transparent bg-linear-to-r from-indigo-600 to-violet-600">
                         ${order.totalAmount.toFixed(2)}
                     </p>
                     <p className="text-xs font-medium text-slate-400">{order.items.length} items</p>
@@ -154,7 +154,7 @@ const OrderCard = ({ order, onViewDetails, onAccept, onReject, onUpdateStatus })
             {/* Estimated Time Badge */}
             {order.estimatedTime && !['delivered', 'cancelled'].includes(order.status) && (
                 <div className="mt-4 flex justify-center">
-                    <span className="bg-blue-50 text-blue-600 px-4 py-1.5 rounded-full text-xs font-bold border border-blue-100 flex items-center gap-1.5 shadow-sm">
+                    <span className="bg-indigo-50 text-indigo-600 px-4 py-1.5 rounded-full text-xs font-bold border border-indigo-100 flex items-center gap-1.5 shadow-sm">
                         ⏱️ {order.estimatedTime} min remaining
                     </span>
                 </div>
